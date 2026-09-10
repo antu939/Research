@@ -1,0 +1,1015 @@
+\documentclass[UTF8,11pt]{ctexart}
+
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{geometry}
+\usepackage{bm}
+\geometry{a4paper,margin=2.5cm}
+\allowdisplaybreaks
+
+\title{多投入汇合生产节点中的冲击会合与下游传播}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+本文讨论在已有单源直链传播结果（\texttt{STEP1.tex}）基础上，多个必需投入在同一个生产节点汇合时，冲击如何进入该节点、如何在节点处共同决定实际生产、以及汇合后的产出缺口如何继续进入下游
+\[
+P-M-M-P
+\]
+结构。
+
+本文不改变 \texttt{DAG.md} 中已有的静态语法。生产投入系数仍记为 \(a_{mp}\)，产出系数仍记为 \(b_{pm}\)，固定一对多配给比例仍记为 \(\rho_e\)。本文只补充一个汇合节点处的动态传播规则。
+
+\paragraph{讨论条件.}
+除特别说明外，沿用 \texttt{STEP1.tex} 的 baseline：
+\begin{itemize}
+    \item \(t<0\) 时网络处于稳态初始化状态；
+    \item production delay 与 transport delay 固定；
+    \item 初始化实际流率不超过相应 capacity；
+    \item 除外生冲击及其恢复外，不考虑主动补库、重新路由、替代投入、超额生产或其他恢复策略；
+    \item 只要物料允许，生产节点以初始化生产强度运行；
+    \item 正常流恢复后不主动把库存补回初始化水平；
+    \item 当前首先讨论固定配方下的必需投入，即所有投入必须同时满足，不讨论可替代供应商之间的重新分配。
+\end{itemize}
+
+此外，为了得到汇合节点的闭式规则，先假定：当某一种投入使生产节点停产时，其他暂时未被消耗的投入可以被保留下来，且这一保留过程不受库存上限约束、不发生损耗或丢弃。若该条件不成立，则必须回到完整的库存守恒方程并显式处理
+\[
+0\le q_m(t)\le \bar q_m.
+\]
+
+\section{一般汇合生产节点}
+
+考虑生产节点 \(P_p\)。设其必需投入集合为
+\[
+\mathcal I_p=\{1,2,\ldots,n_p\},
+\]
+产出集合为
+\[
+\mathcal O_p=\{1,2,\ldots,m_p\}.
+\]
+
+对第 \(h\) 个投入，令
+\[
+a_h\equiv a_{m_h p}>0
+\]
+表示每运行一个单位生产流程 \(P_p\) 所需的投入数量；对第 \(r\) 个产出，令
+\[
+b_r\equiv b_{p m_r}>0
+\]
+表示每运行一个单位生产流程 \(P_p\) 所产生的产出数量。
+
+因此，局部投入产出关系统一写为
+\[
+\boxed{
+\sum_{h\in\mathcal I_p} a_h X_h
+\longrightarrow
+\sum_{r\in\mathcal O_p} b_r Y_r.
+}
+\]
+
+记生产节点的初始化生产强度为
+\[
+\boxed{
+u_p^0\equiv u_p(0).
+}
+\]
+于是第 \(h\) 种投入在稳态下必须以
+\[
+\boxed{
+f_h^0=a_hu_p^0
+}
+\]
+的速率被生产节点消耗，而第 \(r\) 种产出的初始化完成速率为
+\[
+\boxed{
+g_r^0=b_ru_p^0.
+}
+\]
+
+这里 \(a_h\) 和 \(b_r\) 只改变物料数量与生产活动之间的换算比例，并不改变“所有必需投入必须同时满足”的汇合逻辑。
+
+例如
+\[
+2A+3B+4D\longrightarrow 5C
+\]
+在正常生产强度 \(u_p^0\) 下，对应
+\[
+f_A^0=2u_p^0,\qquad
+f_B^0=3u_p^0,\qquad
+f_D^0=4u_p^0,
+\]
+以及
+\[
+g_C^0=5u_p^0.
+\]
+
+\section{输入支路如何进入汇合节点}
+
+对每一个必需投入 \(h\in\mathcal I_p\)，在到达 \(P_p\) 以前仍然先独立按照 \texttt{STEP1.tex} 的规则传播。
+
+第一次讨论汇合时，可以假定每一条输入支路在汇合点以前仍是一条单源直链。例如第 \(h\) 条支路可写为若干连续的
+\[
+P-M-M-P
+\]
+结构，最后通过
+\[
+M_{h,2}\rightarrow P_p
+\]
+进入共同生产节点。
+
+若第 \(h\) 条支路的源头在
+\[
+0\le t<k_h
+\]
+期间完全停产，并在第 \(k_h\) 天恢复，则沿用 STEP1，可先独立得到两个事件时刻：
+\[
+\boxed{
+t_{p,h}^{\mathrm{stop}}
+}
+\]
+和
+\[
+\boxed{
+t_{p,h}^{\mathrm{rec}}.
+}
+\]
+
+这里的下标 \(h\) 只表示“由第 \(h\) 种投入单独来看”的事件时刻，并不是新增状态变量。
+
+设第 \(h\) 条支路上、在到达 \(P_p\) 以前经过的生产节点集合、运输边集合与库存节点集合分别为
+\[
+\mathcal P_h^{up},\qquad
+\mathcal E_h,\qquad
+\mathcal M_h.
+\]
+记库存 \(m\in\mathcal M_h\) 在初始化状态下沿当前支路的正常流出速率为
+\[
+f_m^{out}(0).
+\]
+则 STEP1 的停产前沿可以概括写成
+\[
+\boxed{
+t_{p,h}^{\mathrm{stop}}
+=
+\sum_{v\in\mathcal P_h^{up}}\tau_v^{prod}
++
+\sum_{e\in\mathcal E_h}\tau_e^{trans}
++
+\sum_{m\in\mathcal M_h}
+\frac{q_m(0)}{f_m^{out}(0)}.
+}
+\]
+恢复前沿为
+\[
+\boxed{
+t_{p,h}^{\mathrm{rec}}
+=
+k_h
++
+\sum_{v\in\mathcal P_h^{up}}\tau_v^{prod}
++
+\sum_{e\in\mathcal E_h}\tau_e^{trans}.
+}
+\]
+
+这两式只是 STEP1 逐段递推公式在一条支路上的集合写法。若只看汇合点前最后一个标准结构
+\[
+P_{h}^{up}
+\rightarrow M_{h,1}
+\rightarrow M_{h,2}
+\rightarrow P_p,
+\]
+则该段库存覆盖时间仍分别为
+\[
+\frac{q_{M_{h,1}}(0)}
+     {f_{M_{h,1}\rightarrow M_{h,2}}(0)}
+\qquad\text{和}\qquad
+\frac{q_{M_{h,2}}(0)}
+     {f_{M_{h,2}\rightarrow P_p}(0)}.
+\]
+在稳态下，最后一条输入边必须满足
+\[
+f_{M_{h,2}\rightarrow P_p}(0)
+=
+a_hu_p^0.
+\]
+
+因此，不同投入系数 \(a_h\) 已经通过各自的正常消耗速率进入库存覆盖时间。例如，一个库存中有 \(q\) 单位第 \(h\) 种物料时，其对 \(P_p\) 所能提供的正常生产覆盖时间为
+\[
+\boxed{
+\frac{q}{a_hu_p^0}.
+}
+\]
+
+\paragraph{重要区别.}
+在这一阶段，
+\[
+t_{p,h}^{\mathrm{stop}},
+\qquad
+t_{p,h}^{\mathrm{rec}}
+\]
+都是把第 \(h\) 条支路单独拿出来、假定 \(P_p\) 始终按初始化速率消耗该投入时得到的 STEP1 结果。
+
+因此，进入汇合节点以后不能简单把所有独立窗口
+\[
+[t_{p,h}^{\mathrm{stop}},t_{p,h}^{\mathrm{rec}})
+\]
+直接取并集。原因是：只要任意一种必需投入使 \(P_p\) 停产，其他投入也会同时停止被 \(P_p\) 消耗，从而改变它们之后真正耗尽的时刻。
+
+\section{为什么不能只比较最近库存}
+
+对于第 \(h\) 种投入，真正决定它何时首先限制 \(P_p\) 的，不是离 \(P_p\) 最近的库存数量
+\[
+q_{M_{h,2}}(0)
+\]
+本身，也不是不同物料之间直接比较库存件数。
+
+STEP1 已经把一条支路中的
+\[
+\text{production delay}
++
+\text{transport delay}
++
+\text{inventory coverage}
+\]
+全部合并到
+\[
+t_{p,h}^{\mathrm{stop}}
+\]
+中。因此，在尚未发生汇合耦合以前，应该比较的是
+\[
+\boxed{
+t_{p,h}^{\mathrm{stop}},
+\qquad h\in\mathcal I_p.
+}
+\]
+
+第一次真正停产的候选时刻为
+\[
+\boxed{
+t_p^{\mathrm{stop},1}
+=
+\min_{h:\,\Delta_{p,h}>0}
+t_{p,h}^{\mathrm{stop}},
+}
+\]
+其中 \(\Delta_{p,h}\) 在下一节定义。
+
+一旦第一次停产发生，其他投入不再按原先的独立 STEP1 轨迹继续被消耗，因此后续事件不能再只通过静态比较各自的 \(t_{p,h}^{\mathrm{stop}}\) 得到。
+
+\section{汇合所需的唯一辅助量：等效累计缺料时间}
+
+为了在任意数量投入、任意到达时刻、甚至多个不连续停产窗口的情况下保持统一表示，这里引入一个辅助函数。
+
+首先定义
+\[
+\boxed{
+(x)_+\equiv \max\{x,0\}.
+}
+\]
+
+对第 \(h\) 条输入支路，定义其独立 STEP1 缺口长度
+\[
+\boxed{
+\Delta_{p,h}
+=
+\left(
+t_{p,h}^{\mathrm{rec}}
+-
+t_{p,h}^{\mathrm{stop}}
+\right)_+.
+}
+\]
+如果
+\[
+t_{p,h}^{\mathrm{stop}}
+\ge
+t_{p,h}^{\mathrm{rec}},
+\]
+则
+\[
+\Delta_{p,h}=0,
+\]
+表示该支路的冲击在真正导致 \(P_p\) 缺料以前已经被库存完全吸收。
+
+进一步定义
+\[
+\boxed{
+D_{p,h}(t)
+=
+\min\left\{
+\left(t-t_{p,h}^{\mathrm{stop}}\right)_+,\,
+\Delta_{p,h}
+\right\}.
+}
+\]
+
+\(D_{p,h}(t)\) 的单位是时间。它不是库存状态、运输状态或生产状态，而是由 STEP1 已有的两个事件时刻派生出来的辅助量，其含义为：
+
+\[
+\boxed{
+D_{p,h}(t)
+=
+\text{截至 }t\text{，第 }h\text{ 种投入累计缺少的“等效正常生产时间”。}
+}
+\]
+
+等价的分段写法为
+\[
+D_{p,h}(t)
+=
+\begin{cases}
+0,
+&
+t<t_{p,h}^{\mathrm{stop}},
+\\[2mm]
+t-t_{p,h}^{\mathrm{stop}},
+&
+t_{p,h}^{\mathrm{stop}}
+\le t
+<
+t_{p,h}^{\mathrm{rec}},
+\\[2mm]
+\Delta_{p,h},
+&
+t\ge t_{p,h}^{\mathrm{rec}},
+\end{cases}
+\]
+其中当 \(\Delta_{p,h}=0\) 时整个函数恒为零。
+
+由于第 \(h\) 种投入的正常消耗速率为
+\[
+a_hu_p^0,
+\]
+所以
+\[
+a_hu_p^0D_{p,h}(t)
+\]
+就是把这一“等效缺料时间”重新换算成第 \(h\) 种物料的累计数量缺口。
+
+这一步解释了为什么不同投入系数可以在同一个汇合规则中比较：先分别除以各自的正常投入速率以后，所有支路都被换算成相同单位——“可支持多少正常生产时间”。
+
+\section{汇合节点的核心规则}
+
+\paragraph{命题：多投入汇合的上包络规则.}
+在上述 baseline 下，生产节点 \(P_p\) 的累计有效停产时间为
+\[
+\boxed{
+D_p(t)
+=
+\max_{h\in\mathcal I_p}
+D_{p,h}(t).
+}
+\]
+
+也就是说，汇合节点不是比较原始库存量，也不是把各支路独立缺料窗口直接取并集，而是在统一换算成“等效累计缺料时间”以后，取逐时点最大值。
+
+\paragraph{推导.}
+设截至时刻 \(t\)，若只考虑第 \(h\) 种投入的可用性，则该投入相对于正常状态累计缺少
+\[
+a_hu_p^0D_{p,h}(t)
+\]
+单位物料。
+
+正常情况下，截至 \(t\) 应消耗
+\[
+a_hu_p^0t
+\]
+单位第 \(h\) 种投入。因此，第 \(h\) 种投入截至 \(t\) 最多能够支持的累计生产活动量为
+\[
+\frac{
+a_hu_p^0t-a_hu_p^0D_{p,h}(t)
+}{a_h}
+=
+u_p^0\left[t-D_{p,h}(t)\right].
+\]
+
+所有投入必须同时满足固定配方，因此实际累计生产活动量受最紧的那个投入约束。记
+\[
+U_p(t)
+=
+\int_0^t u_p(s)\,ds
+\]
+为 \(t=0\) 以后累计启动的生产活动量，则
+\[
+\begin{aligned}
+U_p(t)
+&=
+\min_{h\in\mathcal I_p}
+u_p^0\left[t-D_{p,h}(t)\right]
+\\
+&=
+u_p^0
+\left[
+t-
+\max_{h\in\mathcal I_p}D_{p,h}(t)
+\right].
+\end{aligned}
+\]
+于是
+\[
+\boxed{
+U_p(t)
+=
+u_p^0[t-D_p(t)].
+}
+\]
+
+因此，在除去有限个事件切换时刻后，
+\[
+\boxed{
+u_p(t)
+=
+u_p^0
+\left[
+1-\dot D_p(t)
+\right].
+}
+\]
+
+在 STEP1 当前“完全停产---完全恢复”的 baseline 下，每个 \(D_{p,h}(t)\) 都是斜率为 \(0\) 或 \(1\) 的连续分段线性函数，其逐时点最大值 \(D_p(t)\) 也满足
+\[
+\dot D_p(t)\in\{0,1\}
+\]
+几乎处处成立。因此
+\[
+\boxed{
+u_p(t)\in\{u_p^0,0\}
+}
+\]
+几乎处处成立。
+
+具体而言：
+\[
+\dot D_p(t)=1
+\quad\Longrightarrow\quad
+u_p(t)=0,
+\]
+表示至少有一种必需投入正在控制共同生产；而
+\[
+\dot D_p(t)=0
+\quad\Longrightarrow\quad
+u_p(t)=u_p^0.
+\]
+
+\section{实际停产与恢复事件如何从汇合规则中读出}
+
+由于不同支路的冲击到达时间可能不同，\(P_p\) 的实际停产区间不一定只有一个。
+
+将
+\[
+u_p(t)=0
+\]
+的各个最大连通时间区间依次记为
+\[
+\boxed{
+[t_p^{\mathrm{stop},\ell},
+ t_p^{\mathrm{rec},\ell}),
+\qquad
+\ell=1,2,\ldots,L_p.
+}
+\]
+
+这里 \(\ell\) 只用于编号“汇合以后真实发生的第几次停产”，不代表新的物理节点。
+
+这些区间等价于 \(D_p(t)\) 的斜率为 \(1\) 的区间：
+\[
+\boxed{
+[t_p^{\mathrm{stop},\ell},
+ t_p^{\mathrm{rec},\ell})
+\subset
+\{t:\dot D_p(t)=1\}.
+}
+\]
+
+因此，汇合点可能出现
+\[
+\text{停产}
+\rightarrow
+\text{恢复}
+\rightarrow
+\text{再次停产}
+\rightarrow\cdots
+\]
+而不能一般地把所有输入支路的独立窗口压成一个
+\[
+[\min_h t_{p,h}^{\mathrm{stop}},
+ \max_h t_{p,h}^{\mathrm{rec}})
+\]
+区间。
+
+不过，总停产时间有一个简单结果：
+\[
+\boxed{
+\sum_{\ell=1}^{L_p}
+\left(
+t_p^{\mathrm{rec},\ell}
+-
+t_p^{\mathrm{stop},\ell}
+\right)
+=
+D_p(\infty)
+=
+\max_{h\in\mathcal I_p}\Delta_{p,h}.
+}
+\]
+
+因此，多个投入的独立缺口可以在时间上交错，但在当前 baseline 下，汇合节点最终累计损失的正常生产时间等于各投入“独立等效缺料时间”中的最大值。
+
+\paragraph{当前控制投入.}
+在任意时刻，所有满足
+\[
+D_{p,h}(t)=D_p(t)
+\]
+的投入都是当前累计约束最紧的投入。若其中某个函数此时仍在上升，则它正在使 \(P_p\) 停产；若上包络当前为水平段，则 \(P_p\) 可以恢复到初始化生产强度。
+
+\section{投入系数为什么不会改变汇合的 \(\max\) 形式}
+
+考虑一般生产关系
+\[
+a_1X_1+\cdots+a_nX_n
+\longrightarrow
+b_1Y_1+\cdots+b_mY_m.
+\]
+
+若 \(P_p\) 因任意一个投入不足而停产 \(x\) 个时间单位，则第 \(h\) 种投入在这段时间里少被消耗
+\[
+a_hu_p^0x
+\]
+单位。
+
+将其重新除以第 \(h\) 种投入的正常消耗速率
+\[
+a_hu_p^0
+\]
+以后，得到
+\[
+\frac{a_hu_p^0x}{a_hu_p^0}=x.
+\]
+
+因此，同一次共同停产会给所有其他投入留下完全相同的
+\[
+x
+\]
+单位“等效生产时间”缓冲，而不依赖其 \(a_h\) 的大小。
+
+所以：
+\begin{itemize}
+    \item \(a_h\) 决定第 \(h\) 种投入的正常物料流率以及库存 \(q/f\) 能覆盖多少时间；
+    \item 一旦各支路都换算成 \(D_{p,h}(t)\)，汇合规则统一为
+    \[
+    D_p(t)=\max_h D_{p,h}(t).
+    \]
+\end{itemize}
+
+\section{汇合节点如何产生输出}
+
+对任意产出 \(r\in\mathcal O_p\)，每运行一个单位生产活动产生 \(b_r\) 单位 \(Y_r\)。
+
+由于生产节点具有固定 production delay
+\[
+\tau_p^{prod},
+\]
+时刻 \(t\) 完成的产出对应于时刻
+\[
+t-\tau_p^{prod}
+\]
+启动的生产活动。因此，在输出边 capacity 不绑定的 baseline 下，第 \(r\) 种产出的完成速率为
+\[
+\boxed{
+g_r(t)
+=
+b_r
+u_p\!\left(t-\tau_p^{prod}\right).
+}
+\]
+
+故每一个实际停产区间
+\[
+[t_p^{\mathrm{stop},\ell},
+ t_p^{\mathrm{rec},\ell})
+\]
+都会在完成品端平移为
+\[
+\boxed{
+[
+t_p^{\mathrm{stop},\ell}+\tau_p^{prod},
+\,
+t_p^{\mathrm{rec},\ell}+\tau_p^{prod}
+).
+}
+\]
+
+production delay 仍然只平移缺口，不改变每一段缺口的长度，这与 STEP1 完全一致。
+
+如果同一种产出通过固定比例 \(\rho_e\) 分配到某一条输出边
+\[
+e=(p,m_r),
+\]
+则该分支的名义释放速率为
+\[
+\boxed{
+f_e^{release}(t)
+=
+\rho_e b_r
+u_p\!\left(t-\tau_p^{prod}\right).
+}
+\]
+
+在 \(\rho_e\) 固定且输出边 capacity 不绑定时，\(\rho_e\) 与 \(b_r\) 只按比例缩放绝对物料数量，不改变缺口的“等效生产时间”。
+
+经过该输出边的固定 transport delay 后，目标库存实际看到的到达流为
+\[
+\boxed{
+f_e^{arr}(t)
+=
+f_e^{release}
+\!\left(t-\tau_e^{trans}\right).
+}
+\]
+
+因此，一个汇合节点的真实生产缺口在进入下游第一个库存以前，首先整体经历
+\[
+\boxed{
+\tau_p^{prod}
++
+\tau_e^{trans}
+}
+\]
+的时间平移。
+
+\section{如何重新衔接到下游的 \(P-M-M-P\)}
+
+汇合以后最容易出错的地方，是把每一个新产生的停产窗口都重新当作一个全新的 STEP1 问题，并再次使用初始化库存
+\[
+q_m(0).
+\]
+这样会重复使用同一份库存。
+
+为了避免这个问题，可以继续使用前面已经引入的 \(D(t)\) 作为传播接口。它的好处是：多个不连续缺口会被自动累计，而 STEP1 的“恢复正常流但不主动补库”假设意味着库存缓冲只需要从累计缺口中扣除一次。
+
+\subsection*{1. 固定 delay 的传播}
+
+如果一个等效累计缺料函数 \(D^{in}(t)\) 经过固定 delay
+\[
+\tau,
+\]
+则输出端为
+\[
+\boxed{
+D^{out}(t)
+=
+D^{in}(t-\tau),
+}
+\]
+并约定
+\[
+D^{in}(s)=0,\qquad s<0.
+\]
+
+因此 production delay 与 transport delay 的作用仍然只是平移。
+
+\subsection*{2. 库存的传播}
+
+考虑一个库存节点 \(M\)。设该物料段初始化状态满足正常流入等于正常流出，并记正常流率为
+\[
+f_M^0>0.
+\]
+库存初始化量为
+\[
+q_M(0).
+\]
+
+则该库存能够吸收的累计正常缺口时间为
+\[
+\frac{q_M(0)}{f_M^0}.
+\]
+
+若进入该库存的累计等效缺料函数为 \(D^{in}(t)\)，则离开库存以后剩余的累计等效缺料为
+\[
+\boxed{
+D^{out}(t)
+=
+\left[
+D^{in}(t)
+-
+\frac{q_M(0)}{f_M^0}
+\right]_+.
+}
+\]
+
+这一式是 STEP1 中“库存只推迟停产前沿、恢复后不主动补库”的一般化写法。
+
+当 \(D^{in}(t)\) 只对应一个长度为 \(k\) 的单一零流量窗口时，它恰好还原 STEP1 中的
+\[
+t^{\mathrm{stop}},
+\qquad
+t^{\mathrm{rec}},
+\qquad
+t^{\mathrm{rec}}-t^{\mathrm{stop}}.
+\]
+当 \(D^{in}(t)\) 含有多个不连续缺口时，同一个公式仍然成立，并且不会错误地在两个缺口之间把库存重置回 \(q_M(0)\)。
+
+\subsection*{3. 两个库存的标准下游结构}
+
+若 \(P_p\) 的某一输出继续经过
+\[
+P_p
+\rightarrow M_{1}
+\rightarrow M_{2}
+\rightarrow P_q,
+\]
+并且这一物料段的正常流率为 \(f^0\)，则从 \(P_p\) 的汇合缺口 \(D_p(t)\) 出发，先经过 \(P_p\) 自身 production delay、三条 transport delay，并依次消耗两个库存缓冲。
+
+因此，到达下一生产节点 \(P_q\) 的该输入支路累计等效缺料函数可以写成
+\[
+\boxed{
+\begin{aligned}
+D_{q,\mathrm{this\ input}}(t)
+=
+\Bigg[
+&
+D_p
+\Big(
+t
+-\tau_p^{prod}
+-\tau_{P_p\rightarrow M_1}^{trans}
+-\tau_{M_1\rightarrow M_2}^{trans}
+-\tau_{M_2\rightarrow P_q}^{trans}
+\Big)
+\\
+&
+-\frac{q_{M_1}(0)}
+       {f_{M_1\rightarrow M_2}(0)}
+-\frac{q_{M_2}(0)}
+       {f_{M_2\rightarrow P_q}(0)}
+\Bigg]_+.
+\end{aligned}
+}
+\]
+
+若同一物料段在稳态下没有净库存积累，则
+\[
+f_{M_1\rightarrow M_2}(0)
+=
+f_{M_2\rightarrow P_q}(0)
+=
+f^0,
+\]
+上式可进一步写为
+\[
+\boxed{
+\begin{aligned}
+D_{q,\mathrm{this\ input}}(t)
+=
+\Bigg[
+&
+D_p
+\Big(
+t-\tau_p^{prod}
+-\tau_{P_p\rightarrow M_1}^{trans}
+-\tau_{M_1\rightarrow M_2}^{trans}
+-\tau_{M_2\rightarrow P_q}^{trans}
+\Big)
+\\
+&
+-\frac{q_{M_1}(0)+q_{M_2}(0)}{f^0}
+\Bigg]_+.
+\end{aligned}
+}
+\]
+
+这就是汇合节点“出去以后”重新接回 STEP1 标准结构的递推接口。
+
+\section{任意 DAG 上的递归传播规则}
+
+在当前 baseline 下，整个冲击传播可以统一成三个基本运算。
+
+\paragraph{（一）Delay：时间平移.}
+\[
+\boxed{
+D(t)
+\longrightarrow
+D(t-\tau).
+}
+\]
+
+\paragraph{（二）Inventory：扣除库存覆盖时间.}
+\[
+\boxed{
+D(t)
+\longrightarrow
+\left[
+D(t)-\frac{q(0)}{f^0}
+\right]_+.
+}
+\]
+
+\paragraph{（三）多投入汇合：取逐时点最大值.}
+对于
+\[
+\sum_{h\in\mathcal I_p}a_hX_h
+\longrightarrow
+\sum_{r\in\mathcal O_p}b_rY_r,
+\]
+有
+\[
+\boxed{
+D_p(t)
+=
+\max_{h\in\mathcal I_p}
+D_{p,h}(t).
+}
+\]
+
+产出系数 \(b_r\) 以及固定配给比例 \(\rho_e\) 只缩放绝对产出数量；在用各分支自身正常流率归一化为“等效缺料时间”以后，它们不改变 \(D(t)\) 的形状。production delay 与 transport delay 继续通过时间平移进入下一段传播，库存继续通过扣除 \(q/f\) 吸收累计缺口。
+
+因此，任意多级 DAG 可以递归写成
+\[
+\boxed{
+\text{upstream shortage}
+\rightarrow
+\text{delay shift}
+\rightarrow
+\text{inventory absorption}
+\rightarrow
+\max\text{ at required-input merge}
+\rightarrow
+\text{production delay}
+\rightarrow
+\text{downstream propagation}.
+}
+\]
+
+当下一个生产节点再次拥有多个必需投入时，只需对其每一条输入支路得到相应的
+\[
+D_{q,h}(t),
+\]
+然后再次使用
+\[
+\boxed{
+D_q(t)
+=
+\max_hD_{q,h}(t).
+}
+\]
+
+这样，STEP1 的单源直链结果成为每一条输入支路的基础传播规则，而本节的 \(\max\) 规则成为多个必需投入在生产节点处的统一汇合规则。
+
+\section{与 STEP1 的一致性}
+
+若生产节点只有一个必需投入，即
+\[
+|\mathcal I_p|=1,
+\]
+则
+\[
+D_p(t)=D_{p,1}(t).
+\]
+于是汇合规则自动退化回单源直链情形。
+
+若该支路只有一个独立缺口
+\[
+[t_{p,1}^{\mathrm{stop}},
+ t_{p,1}^{\mathrm{rec}}),
+\]
+则
+\[
+D_p(t)
+=
+\min\left\{
+(t-t_{p,1}^{\mathrm{stop}})_+,
+\,
+(t_{p,1}^{\mathrm{rec}}-t_{p,1}^{\mathrm{stop}})_+
+\right\}.
+\]
+其斜率为 \(1\) 的区间恰好就是
+\[
+[t_{p,1}^{\mathrm{stop}},
+ t_{p,1}^{\mathrm{rec}}),
+\]
+从而
+\[
+u_p(t)
+=
+\begin{cases}
+u_p^0,
+&
+t<t_{p,1}^{\mathrm{stop}},
+\\[1mm]
+0,
+&
+t_{p,1}^{\mathrm{stop}}
+\le t<
+t_{p,1}^{\mathrm{rec}},
+\\[1mm]
+u_p^0,
+&
+t\ge t_{p,1}^{\mathrm{rec}},
+\end{cases}
+\]
+与 STEP1 完全一致。
+
+因此，本文并没有替换 STEP1，而是将 STEP1 的
+\[
+(t^{\mathrm{stop}},t^{\mathrm{rec}})
+\]
+表示提升为一个能够处理多输入汇合与多个不连续缺口的递归接口。
+
+\section{当前规则的适用边界}
+
+上述闭式规则针对的是固定比例的必需投入，即 Leontief 型生产关系
+\[
+\sum_h a_hX_h
+\longrightarrow
+\sum_r b_rY_r,
+\]
+且每一种 \(X_h\) 都不可被其他投入直接替代。
+
+以下情况不在当前汇合规则中直接处理：
+\begin{itemize}
+    \item 同一种组件由多个可替代供应商共同供应，并允许供应商之间互相补量；
+    \item 动态改变配给比例 \(\rho_e(t)\)；
+    \item 冲击后主动超额生产或主动补库；
+    \item 非瓶颈投入在共同停产期间因库存容量 \(\bar q_m\) 绑定而无法继续保存；
+    \item 物料损耗、报废、保质期或其他时间相关损失；
+    \item 生产节点自身同时发生新的 capacity shock。
+\end{itemize}
+
+其中，同一种可替代组件的多源供应应先在“同类物料供给”层完成聚合，再把聚合后的这一种必需投入送入本文的多投入汇合节点；该问题可以作为后续单独讨论的多源供应规则。
+
+\section{核心结论}
+
+对一般生产节点
+\[
+\boxed{
+\sum_{h\in\mathcal I_p}a_hX_h
+\longrightarrow
+\sum_{r\in\mathcal O_p}b_rY_r,
+}
+\]
+当前 baseline 下的冲击传播可概括为：
+
+\[
+\boxed{
+\begin{array}{c}
+\text{每条输入支路先独立按 STEP1 传播}
+\\[1mm]
+\Downarrow
+\\[1mm]
+t_{p,h}^{\mathrm{stop}},
+\quad
+t_{p,h}^{\mathrm{rec}}
+\\[1mm]
+\Downarrow
+\\[1mm]
+D_{p,h}(t)
+=
+\min\!\left\{
+(t-t_{p,h}^{\mathrm{stop}})_+,
+\,
+(t_{p,h}^{\mathrm{rec}}-t_{p,h}^{\mathrm{stop}})_+
+\right\}
+\\[2mm]
+\Downarrow
+\\[1mm]
+\boxed{
+D_p(t)=\max_{h\in\mathcal I_p}D_{p,h}(t)
+}
+\\[2mm]
+\Downarrow
+\\[1mm]
+U_p(t)=u_p^0[t-D_p(t)],
+\qquad
+u_p(t)=u_p^0[1-\dot D_p(t)]
+\\[2mm]
+\Downarrow
+\\[1mm]
+g_r(t)=b_ru_p(t-\tau_p^{prod})
+\\[2mm]
+\Downarrow
+\\[1mm]
+\text{transport delay}
+\rightarrow
+\text{inventory absorption}
+\rightarrow
+\text{next }P-M-M-P
+\\[1mm]
+\Downarrow
+\\[1mm]
+\text{若再次汇合，则再次取各输入 }D(t)\text{ 的逐时点最大值。}
+\end{array}
+}
+\]
+
+因此，汇合节点最核心的动态规则不是“取最近库存最少的投入”，也不是“把各输入的独立停产窗口取并集”，而是：
+
+\[
+\boxed{
+\text{先把各输入缺口按各自的 }a_hu_p^0
+\text{ 归一化为等效累计缺料时间，再取逐时点最大值。}
+}
+\]
+
+\end{document}
