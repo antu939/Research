@@ -1,409 +1,935 @@
 \documentclass[UTF8,11pt]{ctexart}
-
 \usepackage{amsmath,amssymb,mathtools}
 \usepackage{geometry}
 \usepackage{bm}
 \geometry{a4paper,margin=2.5cm}
 \allowdisplaybreaks
 
-\title{单源直链 DAG 中停产与恢复的传播推导}
+\title{STEP1：单支路冲击传播\\
+第二版事件定义与第一版对称公式的统一}
 \author{}
 \date{}
 
 \begin{document}
 \maketitle
 
-本文只讨论最简单的单源直链情形
+\section{目的与统一口径}
+
+本文保留两类互补的表达方式：
+
+\begin{enumerate}
+    \item 用明确的事件定义区分“生产节点自身何时停产/恢复”与
+    “该冲击何时真正被某个具体下游观察到”；
+    \item 在单一停产窗口下，保留原有版本高度对称的
+    stop/recovery 递推与累加公式；
+    \item 在多窗口与一般 DAG 下，再用累计缺口函数 \(D(t)\)
+    作为上述公式的统一推广。
+\end{enumerate}
+
+核心原则是
 \[
-P_0
-\rightarrow M_{1,1}
-\rightarrow M_{1,2}
-\rightarrow P_1
-\rightarrow M_{2,1}
-\rightarrow M_{2,2}
-\rightarrow P_2
-\rightarrow \cdots ,
-\]
-即对任意 \(i\geq 1\)，局部结构均为
-\[
-P_{i-1}\rightarrow M_{i,1}\rightarrow M_{i,2}\rightarrow P_i.
+\boxed{
+\text{先定义物理事件，再给单窗口闭式公式，最后推广为 \(D(t)\) 算子。}
+}
 \]
 
-\noindent\textbf{讨论条件.}
-取 \(t=0\) 为 \(P_0\) 发生故障的时刻。故障前 \(t<0\) 网络处于稳态初始化状态，即所有库存、生产流率和实际运输流率均保持其初始化值，
+考虑一条直接生产关系分支
 \[
-q_m(t)=q_m(0),\qquad
-u_p(t)=u_p(0),\qquad
-f_{A\rightarrow B}(t)=f_{A\rightarrow B}(0),
-\qquad t<0,
+P_p\longrightarrow M_1\longrightarrow\cdots
+\longrightarrow M_K\longrightarrow P_q.
 \]
-从而任意库存节点均满足
-\[
-\dot q_m(t)=0,\qquad t<0.
-\]
-因此，对同一段物料链
-\[
-P_{i-1}\rightarrow M_{i,1}\rightarrow M_{i,2}\rightarrow P_i,
-\]
-稳态下的实际运输流率满足
-\[
-f_{P_{i-1}\rightarrow M_{i,1}}(0)
-=
-f_{M_{i,1}\rightarrow M_{i,2}}(0)
-=
-f_{M_{i,2}\rightarrow P_i}(0),
-\]
-但不同生产阶段之间的正常流率不要求相等；生产过程的投入、产出仍分别由 DAG 中已有的 \(a_{mp}\) 与 \(b_{pm}\) 约束。上述相等关系只表示同一物料段在稳态下没有净库存积累，并不要求各运输边的 capacity 或 transport delay 相等。
 
-任意库存节点的动态仍由 DAG 中的库存守恒式决定。例如
+\section{两类事件必须严格区分}
+
+\subsection{生产节点自身的 production-start event}
+
+记 \(u_p(t)\) 为生产节点 \(P_p\) 在时刻 \(t\) 实际启动的生产活动强度，
+初始化正常强度为
 \[
-\dot q_{M_{i,1}}(t)
+u_p^0\equiv u_p(0).
+\]
+
+若 \(P_p\) 在一个单一完全停产窗口内停止启动新生产，定义
+\[
+\boxed{
+I_p^{act}=[\sigma_p,\rho_p),
+}
+\]
+其中
+\[
+\boxed{
+\sigma_p
 =
-f_{P_{i-1}\rightarrow M_{i,1}}
-\!\left(
-t-\tau_{P_{i-1}\rightarrow M_{i,1}}^{trans}
-\right)
--
-f_{M_{i,1}\rightarrow M_{i,2}}(t),
+\text{\(P_p\) 自身停止启动新生产的时刻},
+}
+\]
+\[
+\boxed{
+\rho_p
+=
+\text{\(P_p\) 自身重新以正常强度启动生产的时刻}.
+}
+\]
+
+定义该内部停产窗口长度
+\[
+\boxed{
+\kappa_p=\rho_p-\sigma_p.
+}
+\]
+
+这里的 \(\sigma_p,\rho_p\) 只描述
+\[
+\boxed{\text{\(P_p\) 自身的 production-start plane}}
+\]
+上的事件，不表示任何具体下游已经感受到断供。
+
+\subsection{具体下游观察到的 stop/recovery}
+
+对具体直接下游 \(P_q\)，定义
+\[
+\boxed{
+t_{p\to q}^{\mathrm{stop}}
+=
+\text{由 \(P_p\) 的供给缺口导致
+\(P_q\) 首次无法继续获得正常所需投入的时刻},
+}
 \]
 以及
 \[
-\dot q_{M_{i,2}}(t)
-=
-f_{M_{i,1}\rightarrow M_{i,2}}
-\!\left(
-t-\tau_{M_{i,1}\rightarrow M_{i,2}}^{trans}
-\right)
--
-f_{M_{i,2}\rightarrow P_i}(t).
-\]
-所有 production delay 与 transport delay 均固定；初始化实际流率不超过相应 capacity；除 \(P_0\) 的故障与恢复外，不考虑主动补库、重新路由、超额生产或其他恢复策略。只要库存与到货允许，下游生产与运输均维持初始化实际流率。特别地，在当前连续流体模型中，当某一 \(M\) 的库存已经耗尽而恢复流恰好到达时，只要流入流率足以支持正常流出，就允许
-\[
-q_m(t)=0,\qquad f_{\mathrm{in}}(t)=f_{\mathrm{out}}(t)>0,
-\]
-即恢复流可以直接通过该库存节点，而不要求先把库存补回 \(q_m(0)\)。
-
-\paragraph{（一）停产后的情况.}
-先考虑 \(P_0\) 在 \(t=0\) 后永久停产，即
-\[
-u_{P_0}(t)=0,\qquad t\geq 0.
-\]
-由于 \(P_0\) 在故障发生前已经有物料进入生产过程，因此 \(P_0\) 的完成品缺口并不会在 \(t=0\) 立即出现，而是在
-\[
-\tau_{P_0}^{prod}
-\]
-之后出现。随后该缺口依次经过
-\[
-P_0\rightarrow M_{1,1},\qquad
-M_{1,1}\rightarrow M_{1,2},\qquad
-M_{1,2}\rightarrow P_1
-\]
-三条运输边。固定 transport delay 只将缺口整体向后平移，而不会改变缺口长度。
-
-当缺口首先到达 \(M_{1,1}\) 时，\(M_{1,1}\) 仍可依靠初始化库存
-\[
-q_{M_{1,1}}(0)
-\]
-以正常流率
-\[
-f_{M_{1,1}\rightarrow M_{1,2}}(0)
-\]
-继续向下游供货，因此该库存可以维持正常流出的时间为
-\[
-\frac{q_{M_{1,1}}(0)}
-{f_{M_{1,1}\rightarrow M_{1,2}}(0)}.
-\]
-同理，\(M_{1,2}\) 可以继续维持正常流出的时间为
-\[
-\frac{q_{M_{1,2}}(0)}
-{f_{M_{1,2}\rightarrow P_1}(0)}.
-\]
-因此，\(P_1\) 因原料不足而停止启动新生产的时刻为
-\[
-\begin{aligned}
-t_{P_1}^{\mathrm{stop}}
-={}&
-\tau_{P_0}^{prod}
-+\tau_{P_0\rightarrow M_{1,1}}^{trans}
-+\frac{q_{M_{1,1}}(0)}
-{f_{M_{1,1}\rightarrow M_{1,2}}(0)}
-\\
-&+
-\tau_{M_{1,1}\rightarrow M_{1,2}}^{trans}
-+\frac{q_{M_{1,2}}(0)}
-{f_{M_{1,2}\rightarrow P_1}(0)}
-+\tau_{M_{1,2}\rightarrow P_1}^{trans}.
-\end{aligned}
-\]
-
-沿直链继续向下传播。若 \(P_{i-1}\) 已经因缺料停止启动新生产，则其完成品缺口需再经过自身 production delay
-\[
-\tau_{P_{i-1}}^{prod}
-\]
-后才出现，然后再依次经过
-\[
-P_{i-1}\rightarrow M_{i,1}\rightarrow M_{i,2}\rightarrow P_i.
-\]
-由此递推得到，对任意 \(i\geq 1\)，\(P_i\) 停止启动新生产的时刻为
-\[
 \boxed{
-\begin{aligned}
-t_{P_i}^{\mathrm{stop}}
-={}&
-\sum_{j=1}^{i}
-\Bigg[
-\tau_{P_{j-1}}^{prod}
-+\tau_{P_{j-1}\rightarrow M_{j,1}}^{trans}
-+\frac{q_{M_{j,1}}(0)}
-{f_{M_{j,1}\rightarrow M_{j,2}}(0)}
-\\
-&\qquad\qquad
-+\tau_{M_{j,1}\rightarrow M_{j,2}}^{trans}
-+\frac{q_{M_{j,2}}(0)}
-{f_{M_{j,2}\rightarrow P_j}(0)}
-+\tau_{M_{j,2}\rightarrow P_j}^{trans}
-\Bigg].
-\end{aligned}
-}
-\]
-这里的 \(t_{P_i}^{\mathrm{stop}}\) 只是事件时刻的记号，并不是新增的状态变量。
-
-如果研究的是 \(P_i\) 的完成品产出，而不是 \(u_{P_i}(t)\) 所表示的生产过程运行状态，则完成品开始断供的时刻还需再加上 \(P_i\) 自身的 production delay：
-\[
-\boxed{
-t_{P_i}^{\mathrm{output,stop}}
+t_{p\to q}^{\mathrm{rec}}
 =
-t_{P_i}^{\mathrm{stop}}
-+
-\tau_{P_i}^{prod}.
+\text{\(P_q\) 在发生有效断供后，
+第一次重新收到由 \(P_p\) 恢复生产产生的正常供给的时刻}.
 }
 \]
 
-\paragraph{（二）第 \(k\) 天恢复后的两个时间点.}
-现在令 \(P_0\) 只在
-\[
-0\leq t<k
-\]
-期间完全停产，并在第 \(k\) 天恢复到初始化生产水平：
-\[
-u_{P_0}(t)=u_{P_0}(0),\qquad t\geq k.
-\]
-此时沿网络传播的是一个长度为 \(k\) 的零流量窗口。固定 production delay 与 transport delay 会同时平移该窗口的左、右边界，因此只改变缺口到达下游的时刻，不改变缺口本身的长度；库存则只推迟缺口左边界，从而缩短缺口长度。
-
-若 \(P_i\) 确实会发生停产，则其停止启动新生产的时刻仍与永久停产情形相同，即
+因此必须区分
 \[
 \boxed{
-\begin{aligned}
-t_{P_i}^{\mathrm{stop}}
-={}&
-\sum_{j=1}^{i}
-\Bigg[
-\tau_{P_{j-1}}^{prod}
-+\tau_{P_{j-1}\rightarrow M_{j,1}}^{trans}
-+\frac{q_{M_{j,1}}(0)}
-{f_{M_{j,1}\rightarrow M_{j,2}}(0)}
-\\
-&\qquad\qquad
-+\tau_{M_{j,1}\rightarrow M_{j,2}}^{trans}
-+\frac{q_{M_{j,2}}(0)}
-{f_{M_{j,2}\rightarrow P_j}(0)}
-+\tau_{M_{j,2}\rightarrow P_j}^{trans}
-\Bigg].
-\end{aligned}
+(\sigma_p,\rho_p)
+\neq
+(t_{p\to q}^{\mathrm{stop}},t_{p\to q}^{\mathrm{rec}}).
 }
 \]
 
-恢复前沿则不同。当正常流重新到达一个已经耗空的库存节点时，在当前 baseline 下无需先补回初始化库存，而可以直接继续向下游传递。因此，恢复原料第一次到达 \(P_i\)，也就是 \(P_i\) 可以重新启动生产过程的时刻为
+前者是
 \[
-\boxed{
-\begin{aligned}
-t_{P_i}^{\mathrm{rec}}
-=
-k
-+
-\sum_{j=1}^{i}
-\Big[
-\tau_{P_{j-1}}^{prod}
-+\tau_{P_{j-1}\rightarrow M_{j,1}}^{trans}
-+\tau_{M_{j,1}\rightarrow M_{j,2}}^{trans}
-+\tau_{M_{j,2}\rightarrow P_j}^{trans}
-\Big].
-\end{aligned}
-}
+\text{node-local event},
+\]
+后者是
+\[
+\text{downstream-visible event}.
 \]
 
-因此，\(P_i\) 是否真正发生停产取决于
+若 \(P_p\) 同时连接多个下游，则一般有
 \[
-t_{P_i}^{\mathrm{stop}}<t_{P_i}^{\mathrm{rec}},
-\]
-即
-\[
-\boxed{
-k
->
-\sum_{j=1}^{i}
-\left[
-\frac{q_{M_{j,1}}(0)}
-{f_{M_{j,1}\rightarrow M_{j,2}}(0)}
-+
-\frac{q_{M_{j,2}}(0)}
-{f_{M_{j,2}\rightarrow P_j}(0)}
-\right].
-}
-\]
-若上述条件不成立，则恢复前沿在断供前沿真正导致 \(P_i\) 缺料之前已经追上它，因此 \(P_i\) 从未停止生产。
-
-若 \(P_i\) 确实停产，则其停产持续时间为
-\[
-\begin{aligned}
-t_{P_i}^{\mathrm{rec}}-t_{P_i}^{\mathrm{stop}}
-=
-k
--
-\sum_{j=1}^{i}
-\left[
-\frac{q_{M_{j,1}}(0)}
-{f_{M_{j,1}\rightarrow M_{j,2}}(0)}
-+
-\frac{q_{M_{j,2}}(0)}
-{f_{M_{j,2}\rightarrow P_j}(0)}
-\right].
-\end{aligned}
-\]
-可见，固定 production delay 与 transport delay 同时出现在停产前沿与恢复前沿中，因此在二者相减后完全抵消。它们决定缺口何时到达，而沿途库存决定该缺口最终还能剩下多长。
-
-如果研究的是 \(P_i\) 的完成品产出，则两个时间点均需加上 \(P_i\) 自身的 production delay：
-\[
-\boxed{
-t_{P_i}^{\mathrm{output,stop}}
-=
-t_{P_i}^{\mathrm{stop}}
-+\tau_{P_i}^{prod},
+t_{p\to q_1}^{\mathrm{stop}}
+\neq
+t_{p\to q_2}^{\mathrm{stop}},
 \qquad
-t_{P_i}^{\mathrm{output,rec}}
+t_{p\to q_1}^{\mathrm{rec}}
+\neq
+t_{p\to q_2}^{\mathrm{rec}},
+\]
+因为不同输出分支可以具有不同的 delay 与 inventory buffer。
+
+\section{两个基本传播量}
+
+对直接分支 \(P_p\to P_q\)，记运输边集合和库存节点集合分别为
+\[
+\mathcal E_{p\to q},
+\qquad
+\mathcal M_{p\to q}.
+\]
+
+\subsection{总时间平移}
+
+定义
+\[
+\boxed{
+\Theta_{p\to q}
 =
-t_{P_i}^{\mathrm{rec}}
-+\tau_{P_i}^{prod}.
+\tau_p^{prod}
++
+\sum_{e\in\mathcal E_{p\to q}}
+\tau_e^{trans}.
+}
+\tag{1}
+\]
+
+这里把上游 \(P_p\) 自身的 production delay 明确归入
+\(P_p\to P_q\) 的 downstream propagation。
+
+因此 \(\Theta_{p\to q}\) 只负责
+\[
+\boxed{\text{时间平移}}
+\]
+而不会改变缺口长度。
+
+\subsection{总库存 coverage}
+
+对每个库存节点 \(m\in\mathcal M_{p\to q}\)，
+其初始化正常流出率记为
+\[
+f_m^{out,0}>0.
+\]
+
+定义库存 coverage
+\[
+c_m=\frac{q_m(0)}{f_m^{out,0}},
+\]
+于是整条分支的总库存覆盖时间为
+\[
+\boxed{
+C_{p\to q}
+=
+\sum_{m\in\mathcal M_{p\to q}}
+\frac{q_m(0)}{f_m^{out,0}}.
+}
+\tag{2}
+\]
+
+物理上：
+\[
+\boxed{
+\text{delay 决定冲击何时到达，inventory 决定冲击还能剩多长。}
 }
 \]
-因此完成品断供持续时间仍为
-\[
-t_{P_i}^{\mathrm{output,rec}}
--
-t_{P_i}^{\mathrm{output,stop}}
-=
-t_{P_i}^{\mathrm{rec}}
--
-t_{P_i}^{\mathrm{stop}},
-\]
-\(P_i\) 自身的 production delay 同样只平移整个完成品缺口，不改变其长度。
 
-需要强调的是，恢复正常生产流并不意味着库存恢复到初始化水平。由于当前模型没有主动补库规则，恢复后若重新满足
+\section{STEP1 主结果：单一停产窗口的对称传播公式}
+
+设 \(P_p\) 自身的 production-start gap 为
 \[
-f_{\mathrm{in}}(t)=f_{\mathrm{out}}(t),
+[\sigma_p,\rho_p),
+\qquad
+\kappa_p=\rho_p-\sigma_p.
+\]
+
+定义候选停供前沿
+\[
+\boxed{
+s_{p\to q}
+=
+\sigma_p+\Theta_{p\to q}+C_{p\to q},
+}
+\tag{3}
+\]
+以及恢复产出到达前沿
+\[
+\boxed{
+r_{p\to q}
+=
+\rho_p+\Theta_{p\to q}.
+}
+\tag{4}
+\]
+
+如果
+\[
+s_{p\to q}<r_{p\to q},
+\]
+等价于
+\[
+\boxed{
+\kappa_p>C_{p\to q},
+}
+\tag{5}
+\]
+则此次 \(P_p\) 的内部停产真正穿透该分支全部库存并影响到 \(P_q\)。
+
+此时 STEP1 的核心公式为
+\[
+\boxed{
+\begin{aligned}
+t_{p\to q}^{\mathrm{stop}}
+&=
+\sigma_p
++\Theta_{p\to q}
++C_{p\to q},
+\\[1mm]
+t_{p\to q}^{\mathrm{rec}}
+&=
+\rho_p
++\Theta_{p\to q}.
+\end{aligned}
+}
+\tag{6}
+\]
+
+这保留了原有版本最直接的对称结构：
+\[
+\boxed{
+\begin{aligned}
+\text{stop}
+&=
+\text{upstream stop}
++\text{delay}
++\text{inventory coverage},
+\\
+\text{recovery}
+&=
+\text{upstream recovery}
++\text{delay}.
+\end{aligned}
+}
+\tag{7}
+\]
+
+两式相减得到
+\[
+\boxed{
+t_{p\to q}^{\mathrm{rec}}
+-
+t_{p\to q}^{\mathrm{stop}}
+=
+(\rho_p-\sigma_p)-C_{p\to q}.
+}
+\tag{8}
+\]
+
+因此有效断供持续时间为
+\[
+\boxed{
+\Delta_{p\to q}
+=
+\left[
+(\rho_p-\sigma_p)-C_{p\to q}
+\right]_+.
+}
+\tag{9}
+\]
+
+如果
+\[
+s_{p\to q}\ge r_{p\to q},
 \]
 则
 \[
-\dot q_m(t)=0,
-\]
-库存只会停留在冲击结束后的水平。因此在当前 baseline 中，
-\[
-\text{flow recovery}\neq\text{state recovery}.
-\]
-
-\paragraph{（三）恢复后的逐日生产情况.}
-为了得到第 \(k+1\) 天及之后每一天的生产情况，将第 \(n\) 天定义为时间区间
-\[
-[n,n+1),\qquad n=0,1,2,\ldots.
-\]
-对于生产过程 \(P_i\)，在当前完全停产---完全恢复的 baseline 下，
-\[
-u_{P_i}(t)
-=
-\begin{cases}
-u_{P_i}(0),
-& t<t_{P_i}^{\mathrm{stop}},\\[2mm]
-0,
-& t_{P_i}^{\mathrm{stop}}\leq t<t_{P_i}^{\mathrm{rec}},\\[2mm]
-u_{P_i}(0),
-& t\geq t_{P_i}^{\mathrm{rec}}.
-\end{cases}
-\]
-如果
-\[
-t_{P_i}^{\mathrm{stop}}\geq t_{P_i}^{\mathrm{rec}},
-\]
-则中间的停产区间为空，因而
-\[
-u_{P_i}(t)=u_{P_i}(0),\qquad \forall t.
+\boxed{
+\Delta_{p\to q}=0.
+}
+\tag{10}
 \]
 
-第 \(n\) 天内，停产窗口
+此时 \(P_p\) 自身虽然确实停产，
+但恢复产出前沿在库存完全耗尽之前已经追上缺口前沿，
+所以 \(P_q\) 从未经历一次真正的有效断供。
+此时 \(r_{p\to q}\) 可以称为“恢复产出到达前沿”，
+但不应说 \(P_q\) 发生了“先停后恢复”。
+
+\section{标准 \(P-M-M-P\) 结构}
+
+考虑
 \[
-[t_{P_i}^{\mathrm{stop}},\,t_{P_i}^{\mathrm{rec}})
+P_p\rightarrow M_1\rightarrow M_2\rightarrow P_q.
 \]
-与当天区间
-\[
-[n,n+1)
-\]
-的重合长度为
-\[
-\max\left\{
-0,\,
-\min\!\left(n+1,t_{P_i}^{\mathrm{rec}}\right)
--
-\max\!\left(n,t_{P_i}^{\mathrm{stop}}\right)
-\right\}.
-\]
-因此，第 \(n\) 天 \(P_i\) 实际启动的生产总量为
+
+定义
 \[
 \boxed{
 \begin{aligned}
-\int_n^{n+1}u_{P_i}(t)\,dt
+\Theta_{p\to q}
+={}&
+\tau_p^{prod}
++\tau_{P_p\to M_1}^{trans}
++\tau_{M_1\to M_2}^{trans}
++\tau_{M_2\to P_q}^{trans},
+\\[1mm]
+C_{p\to q}
+={}&
+\frac{q_{M_1}(0)}
+     {f_{M_1\to M_2}^{0}}
++
+\frac{q_{M_2}(0)}
+     {f_{M_2\to P_q}^{0}}.
+\end{aligned}
+}
+\tag{11}
+\]
+
+若单一停产窗口能够穿透全部库存，则
+\[
+\boxed{
+\begin{aligned}
+t_{p\to q}^{\mathrm{stop}}
+={}&
+\sigma_p
++\tau_p^{prod}
++\tau_{P_p\to M_1}^{trans}
++\frac{q_{M_1}(0)}{f_{M_1\to M_2}^{0}}
+\\
+&+
+\tau_{M_1\to M_2}^{trans}
++\frac{q_{M_2}(0)}{f_{M_2\to P_q}^{0}}
++\tau_{M_2\to P_q}^{trans},
+\\[2mm]
+t_{p\to q}^{\mathrm{rec}}
+={}&
+\rho_p
++\tau_p^{prod}
++\tau_{P_p\to M_1}^{trans}
++\tau_{M_1\to M_2}^{trans}
++\tau_{M_2\to P_q}^{trans}.
+\end{aligned}
+}
+\tag{12}
+\]
+
+因此 production delay 与 transport delay
+在 stop/recovery 两个前沿中完全对称出现；
+库存 coverage 只进入 stop 前沿。
+
+\section{单源直链：恢复原有版本的递推与累加格式}
+
+考虑
+\[
+P_0
+\rightarrow\mathcal B_1
+\rightarrow P_1
+\rightarrow\mathcal B_2
+\rightarrow P_2
+\rightarrow\cdots
+\rightarrow\mathcal B_i
+\rightarrow P_i,
+\]
+其中 \(\mathcal B_j\) 表示
+\(P_{j-1}\) 到 \(P_j\) 之间不含其他生产节点的一条物料支路。
+
+定义
+\[
+\Theta_j
+\equiv
+\Theta_{P_{j-1}\to P_j},
+\qquad
+C_j
+\equiv
+C_{P_{j-1}\to P_j}.
+\]
+
+设源头 \(P_0\) 自身发生一个单一 production-start gap
+\[
+[\sigma_0,\rho_0).
+\]
+
+在单输入直链中，只要冲击尚未被库存完全吸收，
+\(P_{j-1}\) 对 \(P_j\) 的 downstream-visible shortage
+就直接决定 \(P_j\) 自身的 production-start gap。
+因此有递推式
+\[
+\boxed{
+\begin{aligned}
+\sigma_j
+&=
+\sigma_{j-1}
++\Theta_j
++C_j,
+\\[1mm]
+\rho_j
+&=
+\rho_{j-1}
++\Theta_j.
+\end{aligned}
+}
+\tag{13}
+\]
+
+逐段累加得到
+\[
+\boxed{
+\begin{aligned}
+\sigma_i
+&=
+\sigma_0
++\sum_{j=1}^{i}\Theta_j
++\sum_{j=1}^{i}C_j,
+\\[1mm]
+\rho_i
+&=
+\rho_0
++\sum_{j=1}^{i}\Theta_j.
+\end{aligned}
+}
+\tag{14}
+\]
+
+因此
+\[
+\boxed{
+\rho_i-\sigma_i
 =
-u_{P_i}(0)
-\Bigg[
-1
+(\rho_0-\sigma_0)
 -
-\max\Big\{
-0,\,
-\min\!\left(n+1,t_{P_i}^{\mathrm{rec}}\right)
+\sum_{j=1}^{i}C_j.
+}
+\tag{15}
+\]
+
+若旧版设定为
+\[
+\sigma_0=0,
+\qquad
+\rho_0=k,
+\]
+则立刻得到
+\[
+\boxed{
+\begin{aligned}
+\sigma_i
+&=
+\sum_{j=1}^{i}(\Theta_j+C_j),
+\\[1mm]
+\rho_i
+&=
+k+\sum_{j=1}^{i}\Theta_j,
+\end{aligned}
+}
+\tag{16}
+\]
+以及
+\[
+\boxed{
+\rho_i-\sigma_i
+=
+k-\sum_{j=1}^{i}C_j.
+}
+\tag{17}
+\]
+
+若
+\[
+k\le \sum_{j=1}^{i}C_j,
+\]
+则该冲击在到达 \(P_i\) 之前已经被累计库存 coverage 完全吸收，
+因此 \(P_i\) 不形成有效 production-start gap。
+
+\section{从原有累加公式推广到累计缺口函数 \(D(t)\)}
+
+原有对称公式适合描述
+\[
+\boxed{\text{单一 stop/recovery 窗口}.}
+\]
+
+为了处理多个不连续窗口、汇合后再分叉以及一般 DAG，
+定义 \(P_p\) 的内部累计 production-start 缺口
+\[
+\boxed{
+D_p^{act}(t)
+=
+\text{截至 \(t\)，\(P_p\) 相对于正常状态累计少启动的等效正常生产时间}.
+}
+\tag{18}
+\]
+
+在完全停产---完全恢复 baseline 下，
+\[
+\dot D_p^{act}(t)\in\{0,1\}
+\]
+几乎处处成立，并且
+\[
+\boxed{
+u_p(t)
+=
+u_p^0\left[1-\dot D_p^{act}(t)\right].
+}
+\tag{19}
+\]
+
+对于单一内部停产窗口
+\[
+[\sigma_p,\rho_p),
+\]
+有
+\[
+\boxed{
+D_p^{act}(t)
+=
+\min\left\{
+(t-\sigma_p)_+,
+\rho_p-\sigma_p
+\right\}.
+}
+\tag{20}
+\]
+
+约定 \(s<0\) 时
+\[
+D_p^{act}(s)=0.
+\]
+
+则任意窗口情况下的 STEP1 传播算子定义为
+\[
+\boxed{
+D_{p\to q}(t)
+=
+\mathcal T_{p\to q}[D_p^{act}](t)
+=
+\left[
+D_p^{act}(t-\Theta_{p\to q})
 -
-\max\!\left(n,t_{P_i}^{\mathrm{stop}}\right)
-\Big\}
-\Bigg].
+C_{p\to q}
+\right]_+.
+}
+\tag{21}
+\]
+
+这里
+\[
+(x)_+\equiv\max\{x,0\}.
+\]
+
+其基本构件为
+\[
+\boxed{
+\text{Delay}:D(t)\mapsto D(t-\tau),
+}
+\tag{22}
+\]
+以及
+\[
+\boxed{
+\text{Inventory}:D(t)\mapsto
+\left[D(t)-\frac{q(0)}{f^0}\right]_+.
+}
+\tag{23}
+\]
+
+由于
+\[
+[[x-c_1]_+-c_2]_+
+=
+[x-c_1-c_2]_+,
+\]
+多个串联库存 coverage 可以直接累加。
+
+\section{\(D(t)\) 算子如何退化回原有对称公式}
+
+将单一窗口式 \((20)\) 代入 \((21)\)：
+\[
+D_{p\to q}(t)
+=
+\left[
+\min\left\{
+(t-\Theta_{p\to q}-\sigma_p)_+,
+\rho_p-\sigma_p
+\right\}
+-
+C_{p\to q}
+\right]_+.
+\tag{24}
+\]
+
+若
+\[
+\rho_p-\sigma_p>C_{p\to q},
+\]
+则 \(D_{p\to q}(t)\) 开始增长的时刻正是
+\[
+\boxed{
+t_{p\to q}^{\mathrm{stop}}
+=
+\sigma_p+\Theta_{p\to q}+C_{p\to q},
+}
+\]
+而停止增长的时刻正是
+\[
+\boxed{
+t_{p\to q}^{\mathrm{rec}}
+=
+\rho_p+\Theta_{p\to q}.
+}
+\]
+
+因此
+\[
+\boxed{
+\text{\(D(t)\) 不是另一套模型，
+而是原有 stop/recovery 累加公式的多窗口推广。}
+}
+\tag{25}
+\]
+
+\section{算子复合仍然就是原有的“逐段累加”}
+
+定义
+\[
+\mathcal T_{\Theta,C}[D](t)
+=
+[D(t-\Theta)-C]_+.
+\]
+
+经过两段支路：
+\[
+D_1(t)
+=
+\mathcal T_{\Theta_1,C_1}[D_0](t),
+\]
+\[
+D_2(t)
+=
+\mathcal T_{\Theta_2,C_2}[D_1](t).
+\]
+
+利用
+\[
+[[x-C_1]_+-C_2]_+
+=
+[x-C_1-C_2]_+,
+\]
+得到
+\[
+\boxed{
+D_2(t)
+=
+\left[
+D_0(t-\Theta_1-\Theta_2)
+-(C_1+C_2)
+\right]_+.
+}
+\tag{26}
+\]
+
+因此沿单源直链连续复合得到
+\[
+\boxed{
+D_i^{act}(t)
+=
+\left[
+D_0^{act}
+\left(
+t-\sum_{j=1}^{i}\Theta_j
+\right)
+-
+\sum_{j=1}^{i}C_j
+\right]_+.
+}
+\tag{27}
+\]
+
+所以新算子在没有汇合的直链上，
+与旧版“delay 逐段累加、inventory coverage 逐段累加”的计算完全一致。
+
+\section{与原有“第 \(i\) 个厂第 \(k\) 天生产状况”的对应}
+
+\(D_i^{act}(t)\) 是原有逐日生产状态的连续时间累计表示。
+
+在二元 baseline 下，
+\[
+\boxed{
+\frac{u_i(t)}{u_i^0}
+=
+1-\dot D_i^{act}(t).
+}
+\tag{28}
+\]
+
+因此
+\[
+\dot D_i^{act}(t)=0
+\quad\Longleftrightarrow\quad
+P_i\text{ 正常生产},
+\]
+\[
+\dot D_i^{act}(t)=1
+\quad\Longleftrightarrow\quad
+P_i\text{ 完全停产}.
+\]
+
+若把第 \(k\) 天定义为
+\[
+[k,k+1),
+\]
+并且该日内部没有额外的日内切换，则可写
+\[
+\boxed{
+x_i[k]
+=
+1-
+\left(
+D_i^{act}(k+1)-D_i^{act}(k)
+\right),
+}
+\tag{29}
+\]
+其中
+\[
+x_i[k]\in\{0,1\}.
+\]
+
+于是
+\[
+\boxed{
+x_i[k]=1
+\Longleftrightarrow
+\text{第 \(i\) 个厂第 \(k\) 天生产},
+}
+\]
+\[
+\boxed{
+x_i[k]=0
+\Longleftrightarrow
+\text{第 \(i\) 个厂第 \(k\) 天停产}.
+}
+\]
+
+若一天内部允许发生 stop/recovery 切换，则
+\[
+D_i^{act}(k+1)-D_i^{act}(k)\in[0,1]
+\]
+自然表示该日损失的正常生产时间比例。
+
+\section{多窗口情况下如何定义 stop/recovery}
+
+如果 \(P_p\) 经历多个不连续 production-start gaps，
+同一份下游库存不能针对每个窗口重新初始化为 \(q(0)\)。
+
+因此不能对每个窗口分别套用一次
+\[
+C_{p\to q}
+\]
+再把得到的区间简单取并集。
+
+正确做法是先计算完整的
+\[
+D_{p\to q}(t)
+=
+[D_p^{act}(t-\Theta_{p\to q})-C_{p\to q}]_+.
+\]
+
+在完全停产---完全恢复 baseline 下，
+所有满足
+\[
+\dot D_{p\to q}(t)=1
+\]
+的最大连通区间定义为
+\[
+\boxed{
+[t_{p\to q}^{\mathrm{stop},\ell},
+t_{p\to q}^{\mathrm{rec},\ell}),
+\qquad
+\ell=1,\ldots,L_{p\to q}.
+}
+\tag{30}
+\]
+
+所以一般情形下，
+\[
+\boxed{
+D_{p\to q}(t)
+\text{ 是主接口，}
+\qquad
+(t^{\mathrm{stop}},t^{\mathrm{rec}})
+\text{ 是从 \(D\) 中读取的事件标记。}
+}
+\]
+
+\section{正常流率与固定比例}
+
+若 \(P_p\) 的某种产出 \(Y\) 的产出系数为
+\[
+b_{pY}>0,
+\]
+并以固定比例
+\[
+\rho_{p\to q}>0
+\]
+分配到通往 \(P_q\) 的分支，且输出边 capacity 不绑定，
+则该分支初始化正常流率为
+\[
+\boxed{
+f_{p\to q}^0
+=
+\rho_{p\to q}b_{pY}u_p^0.
+}
+\tag{31}
+\]
+
+固定的产出系数和固定配给比例只缩放物料数量。
+当缺口按各自正常流率归一化成“等效正常生产时间”后，
+不会改变 \(D(t)\) 的形状；
+它们通过正常流率进入库存 coverage
+\[
+q(0)/f^0.
+\]
+
+\section{当前规则的适用边界}
+
+以上闭式与算子形式基于以下 baseline：
+\begin{itemize}
+    \item \(t<0\) 时网络处于稳态初始化；
+    \item production delay 与 transport delay 固定；
+    \item 固定生产配方和固定输出配给比例；
+    \item 输出边 capacity 不绑定；
+    \item 不主动补库、不超额生产、不重新路由；
+    \item 正常流恢复到已耗空库存时允许直接穿过，不要求先补回 \(q_m(0)\)；
+    \item 没有损耗、报废、保质期约束；
+    \item 当前主要考虑完全停产---完全恢复的二元生产强度。
+\end{itemize}
+
+若以后允许 partial recovery，
+则仍可使用累计缺口函数，但一般有
+\[
+0\le \dot D(t)\le1,
+\]
+并且
+\[
+u_p(t)=u_p^0[1-\dot D_p^{act}(t)]
+\]
+可以描述部分生产。
+
+若设备故障会直接冻结已经进入流程的 WIP，
+则 production delay 不再是 simple pure delay，
+需要显式引入 WIP 状态；本文不处理该情形。
+
+\section{STEP1 最终接口}
+
+单窗口下，优先使用直观的对称公式
+\[
+\boxed{
+\begin{aligned}
+t_{p\to q}^{\mathrm{stop}}
+&=
+\sigma_p+\Theta_{p\to q}+C_{p\to q},
+\\
+t_{p\to q}^{\mathrm{rec}}
+&=
+\rho_p+\Theta_{p\to q},
 \end{aligned}
 }
 \]
-该式自动包含三种情形：若当天完全位于停产窗口之外，则生产量为 \(u_{P_i}(0)\)；若当天完全位于停产窗口之内，则生产量为 \(0\)；若停产或恢复发生在当天中途，则生产量按正常运行时间的比例得到。
+并检查
+\[
+\rho_p-\sigma_p>C_{p\to q}.
+\]
 
-特别地，即使 \(P_0\) 已经在第 \(k\) 天恢复，下游的 \(P_i\) 仍可能在 \(t>k\) 时才开始停产，因为由 \(P_0\) 造成的零流量窗口仍在 production delay、transport delay 与沿途库存之间继续向下游传播。随着 \(i\) 增大，停产窗口整体向后平移，同时其长度被沿途库存逐级削短；当
+多窗口或一般 DAG 下，使用统一算子
 \[
-k
-\leq
-\sum_{j=1}^{i}
+\boxed{
+D_{p\to q}(t)
+=
 \left[
-\frac{q_{M_{j,1}}(0)}
-{f_{M_{j,1}\rightarrow M_{j,2}}(0)}
-+
-\frac{q_{M_{j,2}}(0)}
-{f_{M_{j,2}\rightarrow P_j}(0)}
-\right]
+D_p^{act}(t-\Theta_{p\to q})
+-C_{p\to q}
+\right]_+.
+}
 \]
-时，\(P_i\) 及其更下游在当前单源直链 baseline 中将不再出现由该次故障引起的停产。
 
-若研究的不是 \(u_{P_i}(t)\) 所表示的生产过程运行量，而是 \(P_i\) 的完成品产出，则只需将停产窗口整体向后平移 \(\tau_{P_i}^{prod}\)。在单输出直链下，对应完成品进入下一物料节点的流率由 DAG 中已有的产出系数 \(b_{P_i,M_{i+1,1}}\) 与
+因此 STEP1 可以概括为
 \[
-u_{P_i}\!\left(t-\tau_{P_i}^{prod}\right)
+\boxed{
+\underbrace{D_p^{act}}_{\text{上游自身 activity}}
+\quad
+\xrightarrow{
+\substack{
+\text{production/transport delay}\\
+\text{inventory absorption}
+}}
+\quad
+\underbrace{D_{p\to q}}_{\text{具体下游可见 shortage}}.
+}
 \]
-共同决定。因而完成品的逐日断供窗口为
-\[
-\left[
-t_{P_i}^{\mathrm{stop}}+\tau_{P_i}^{prod},
-\,
-t_{P_i}^{\mathrm{rec}}+\tau_{P_i}^{prod}
-\right),
-\]
-其持续时间与生产过程本身的停产持续时间完全相同。
+
+该 \(D_{p\to q}(t)\) 正是 STEP2 在 required-input merge 时直接接收的输入。
 
 \end{document}
